@@ -1,6 +1,6 @@
 {
   "name": "TaskFlow - Gerenciador de Tarefas Diárias",
-  "description": "Aplicação completa de gerenciamento de tarefas diárias (CRUD) com documentação de arquitetura Java Spring Boot, scripts PostgreSQL e suíte de testes.",
+  "description": " testes.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [...I"]
 }
