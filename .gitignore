@@ -1,0 +1,21 @@
+# Node / Frontend
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.env*
+!.env.example
+bun.lock
+
+# Java / Maven
+target/
+backend/target/
+*.class
+
+# IDEs e Sistema
+.DS_Store
+.idea/
+*.iml
+.vscode/
+*.swp

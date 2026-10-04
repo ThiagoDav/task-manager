@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List | Java Spring Boot</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; padding: 2rem 1rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+        .badge-author { font-size: 0.75rem; background: #e2e8f0; color: #475569; padding: 0.25rem 0.5rem; border-radius: 4px; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
+        .form-group.full { grid-column: span 2; }
+        label { font-size: 0.75rem; font-weight: 600; color: #64748b; }
+        input, select, textarea { padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #0f172a; }
+        button.btn-primary { background: #0f172a; color: #ffffff; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
+        button.btn-primary:hover { background: #1e293b; }
+        .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; }
+        .filter-link { text-decoration: none; font-size: 0.75rem; font-weight: 500; padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; }
+        .filter-link.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+        .task-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .task-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .task-info { flex: 1; }
+        .task-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+        .status-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.45rem; border-radius: 4px; text-transform: uppercase; }
+        .status-PENDENTE { background: #fef3c7; color: #92400e; }
+        .status-EM_ANDAMENTO { background: #dbeafe; color: #1e40af; }
+        .status-CONCLUIDA { background: #dcfce7; color: #166534; }
+        .status-CANCELADA { background: #f1f5f9; color: #475569; }
+        .task-name { font-size: 0.95rem; font-weight: 600; color: #0f172a; }
+        .task-desc { font-size: 0.8rem; color: #475569; margin-bottom: 0.5rem; line-height: 1.4; }
+        .task-obs { font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.25rem 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem; }
+        .task-dates { font-size: 0.7rem; color: #94a3b8; }
+        .task-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .btn-delete { background: #fee2e2; color: #dc2626; border: none; padding: 0.4rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-delete:hover { background: #fecaca; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+            <h1>Tarefas Diárias</h1>
+            <p style="font-size: 0.8rem; color: #64748b;">Sistema 100% Java Spring Boot + PostgreSQL</p>
+        </div>
+        <span class="badge-author">Autor: thiago01</span>
+    </header>
+
+    <!-- Formulário para Criar Tarefa -->
+    <div class="card">
+        <h2 class="card-title">Nova Tarefa</h2>
+        <form th:action="@{/tarefas/salvar}" th:object="${novaTarefa}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome da Tarefa *</label>
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Estudar Spring Data JPA" required />
+                </div>
+                <div class="form-group">
+                    <label for="status">Status Inicial</label>
+                    <select id="status" name="status">
+                        <option value="PENDENTE">Pendente</option>
+                        <option value="EM_ANDAMENTO">Em Andamento</option>
+                        <option value="CONCLUIDA">Concluída</option>
+                        <option value="CANCELADA">Cancelada</option>
+                    </select>
+                </div>
+                <div class="form-group full">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" rows="2" placeholder="Detalhes e objetivos da tarefa"></textarea>
+                </div>
+                <div class="form-group full">
+                    <label for="observacoes">Observações</label>
+                    <input type="text" id="observacoes" name="observacoes" placeholder="Informações adicionais ou notas de entrega" />
+                </div>
+            </div>
+            <div style="margin-top: 1rem; text-align: right;">
+                <button type="submit" class="btn-primary">+ Adicionar Tarefa</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Barra de Filtros -->
+    <div class="filters">
+        <a th:href="@{/}" class="filter-link" th:classappend="${filtroAtual == null} ? 'active' : ''">Todas</a>
+        <a th:href="@{/(status='PENDENTE')}" class="filter-link" th:classappend="${filtroAtual?.name() == 'PENDENTE'} ? 'active' : ''">Pendentes</a>
+        <a th:href="@{/(status='EM_ANDAMENTO')}" class="filter-link" th:classappend="${filtroAtual?.name() == 'EM_ANDAMENTO'} ? 'active' : ''">Em Andamento</a>
+        <a th:href="@{/(status='CONCLUIDA')}" class="filter-link" th:classappend="${filtroAtual?.name() == 'CONCLUIDA'} ? 'active' : ''">Concluídas</a>
+        <a th:href="@{/(status='CANCELADA')}" class="filter-link" th:classappend="${filtroAtual?.name() == 'CANCELADA'} ? 'active' : ''">Canceladas</a>
+    </div>
+
+    <!-- Listagem de Tarefas -->
+    <div th:if="${#lists.isEmpty(tarefas)}" class="card empty-state">
+        <p>Nenhuma tarefa cadastrada no momento.</p>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(tarefas)}" class="task-list">
+        <div th:each="tarefa : ${tarefas}" class="task-item">
+            <div class="task-info">
+                <div class="task-header">
+                    <span class="status-badge" th:classappend="'status-' + ${tarefa.status}" th:text="${tarefa.status}">PENDENTE</span>
+                    <span class="task-name" th:text="${tarefa.nome}">Nome da Tarefa</span>
+                </div>
+                <p class="task-desc" th:if="${tarefa.descricao}" th:text="${tarefa.descricao}"></p>
+                <div class="task-obs" th:if="${tarefa.observacoes}">
+                    <strong>Obs:</strong> <span th:text="${tarefa.observacoes}"></span>
+                </div>
+                <div class="task-dates">
+                    Criada em: <span th:text="${#temporals.format(tarefa.dataCriacao, 'dd/MM/yyyy HH:mm')}"></span>
+                    • Atualizada em: <span th:text="${#temporals.format(tarefa.dataAtualizacao, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+            <div class="task-actions">
+                <!-- Alterar Status Rápido -->
+                <form th:action="@{'/tarefas/' + ${tarefa.id} + '/status'}" method="post" style="display:inline;">
+                    <select name="novoStatus" onchange="this.form.submit()" style="padding: 0.3rem 0.5rem; font-size: 0.75rem;">
+                        <option value="PENDENTE" th:selected="${tarefa.status.name() == 'PENDENTE'}">Pendente</option>
+                        <option value="EM_ANDAMENTO" th:selected="${tarefa.status.name() == 'EM_ANDAMENTO'}">Em Andamento</option>
+                        <option value="CONCLUIDA" th:selected="${tarefa.status.name() == 'CONCLUIDA'}">Concluída</option>
+                        <option value="CANCELADA" th:selected="${tarefa.status.name() == 'CANCELADA'}">Cancelada</option>
+                    </select>
+                </form>
+
+                <!-- Excluir Tarefa -->
+                <form th:action="@{'/tarefas/' + ${tarefa.id} + '/excluir'}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-delete" title="Excluir tarefa">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
